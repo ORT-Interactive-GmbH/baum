@@ -1,5 +1,7 @@
 <?php
 
+use Baum\Tests\Models\Cluster;
+
 class ClusterColumnsTest extends ClusterTestCase {
 
   public function testKeyIsNonNumeric() {

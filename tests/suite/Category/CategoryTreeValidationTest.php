@@ -1,5 +1,7 @@
 <?php
 
+use Baum\Tests\Models\Category;
+
 class CategoryTreeValidationTest extends CategoryTestCase {
 
   public function testTreeIsNotValidWithNullLefts() {

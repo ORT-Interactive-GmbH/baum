@@ -1,5 +1,10 @@
 <?php
 
+use Baum\Tests\Models\Category;
+use Baum\Tests\Models\MultiScopedCategory;
+use Baum\Tests\Models\OrderedCategory;
+use Baum\Tests\Models\ScopedCategory;
+
 class CategoryColumnsTest extends CategoryTestCase {
 
   public function testGetParentColumnName() {
@@ -87,7 +92,7 @@ class CategoryColumnsTest extends CategoryTestCase {
   }
 
   public function testGetOrderNonDefault() {
-    $category = $this->categories('Root 1', 'OrderedCategory');
+    $category = $this->categories('Root 1', OrderedCategory::class);
 
     $this->assertEquals($category->getOrder(), 'Root 1');
   }

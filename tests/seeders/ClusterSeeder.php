@@ -1,6 +1,8 @@
 <?php
 
+use Baum\Tests\Models\Cluster;
 use Illuminate\Database\Capsule\Manager as DB;
+use Baum\Tests\Models\OrderedCluster;
 
 class ClusterSeeder {
 

@@ -1,23 +1,28 @@
 <?php
 
+use Baum\Tests\Models\Category;
+use Baum\Tests\Models\MultiScopedCategory;
+use Baum\Tests\Models\OrderedCategory;
+use Baum\Tests\Models\ScopedCategory;
+use Baum\Tests\Models\SoftCategory;
 use Mockery as m;
 use Illuminate\Database\Capsule\Manager as DB;
 
-class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
+class NodeModelExtensionsTest extends \PHPUnit\Framework\TestCase {
 
-  public static function setUpBeforeClass() {
+  public static function setUpBeforeClass(): void {
     with(new CategoryMigrator)->up();
   }
 
-  public function setUp() {
+  public function setUp(): void {
     DB::table('categories')->delete();
   }
 
-  protected function categories($name, $className = 'Category') {
+  protected function categories($name, $className = Category::class) {
     return forward_static_call_array(array($className, 'where'), array('name', '=', $name))->first();
   }
 
-  public function tearDown() {
+  public function tearDown(): void {
     m::close();
   }
 
@@ -48,34 +53,6 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
     $this->assertTrue(SoftCategory::softDeletesEnabled());
   }
 
-  public function testMoving() {
-    $dispatcher = Category::getEventDispatcher();
-
-    Category::setEventDispatcher($events = m::mock('Illuminate\Contracts\Events\Dispatcher'));
-
-    $closure = function() {};
-    $events->shouldReceive('listen')->once()->with('eloquent.moving: '.get_class(new Category), $closure, 0);
-    Category::moving($closure);
-
-    Category::unsetEventDispatcher();
-
-    Category::setEventDispatcher($dispatcher);
-  }
-
-  public function testMoved() {
-    $dispatcher = Category::getEventDispatcher();
-
-    Category::setEventDispatcher($events = m::mock('Illuminate\Contracts\Events\Dispatcher'));
-
-    $closure = function() {};
-    $events->shouldReceive('listen')->once()->with('eloquent.moved: '.get_class(new Category), $closure, 0);
-    Category::moved($closure);
-
-    Category::unsetEventDispatcher();
-
-    Category::setEventDispatcher($dispatcher);
-  }
-
   public function testReloadResetsChangesOnFreshNodes() {
     $new = new Category;
 
@@ -92,7 +69,7 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
     $node->lft = 10;
     $node->reload();
 
-    $this->assertEquals($this->categories('Some node'), $node);
+    $this->assertEquals($this->categories('Some node')->getAttributes(), $node->getAttributes());
   }
 
   public function testReloadResetsChangesOnDeletedNodes() {
@@ -108,10 +85,8 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals('Some node', $node->name);
   }
 
-  /**
-   * @expectedException Illuminate\Database\Eloquent\ModelNotFoundException
-   */
   public function testReloadThrowsExceptionIfNodeCannotBeLocated() {
+      $this->expectException(Illuminate\Database\Eloquent\ModelNotFoundException::class);
     $node = Category::create(['name' => 'Some node']);
     $this->assertNotNull($node->getKey());
 
@@ -137,7 +112,7 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
     $builder = $category->newNestedSetQuery();
     $query = $builder->getQuery();
 
-    $this->assertNull($query->wheres);
+    $this->assertCount(0, $query->wheres);
     $this->assertNotEmpty($query->orders);
     $this->assertEquals($category->getLeftColumnName(), $category->getOrderColumnName());
     $this->assertEquals($category->getQualifiedLeftColumnName(), $category->getQualifiedOrderColumnName());
@@ -149,7 +124,7 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
     $builder = $category->newNestedSetQuery();
     $query = $builder->getQuery();
 
-    $this->assertNull($query->wheres);
+      $this->assertCount(0, $query->wheres);
     $this->assertNotEmpty($query->orders);
     $this->assertEquals('name', $category->getOrderColumnName());
     $this->assertEquals('categories.name', $category->getQualifiedOrderColumnName());
@@ -159,7 +134,7 @@ class NodeModelExtensionsTest extends PHPUnit_Framework_TestCase {
   public function testNewNestedSetQueryIncludesScopedColumns() {
     $category = new Category;
     $simpleQuery = $category->newNestedSetQuery()->getQuery();
-    $this->assertNull($simpleQuery->wheres);
+      $this->assertCount(0, $simpleQuery->wheres);
 
     $scopedCategory = new ScopedCategory;
     $scopedQuery = $scopedCategory->newNestedSetQuery()->getQuery();

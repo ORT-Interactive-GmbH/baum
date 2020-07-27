@@ -1,5 +1,8 @@
 <?php
 
+use Baum\Tests\Models\Category;
+use Baum\Tests\Models\OrderedCategory;
+
 class CategoryHierarchyTest extends CategoryTestCase {
 
   public function testAllStatic() {
@@ -24,8 +27,8 @@ class CategoryHierarchyTest extends CategoryTestCase {
     $this->assertEquals($query->count(), $roots->count());
     $this->assertCount(2, $roots);
 
-    foreach ($query->lists('id') as $node)
-      $this->assertContains($node, $roots->lists('id'));
+    foreach ($query->pluck('id') as $node)
+      $this->assertContains($node, $roots->pluck('id'));
   }
 
   public function testRootsStaticWithCustomOrder() {
@@ -35,7 +38,7 @@ class CategoryHierarchyTest extends CategoryTestCase {
     $roots = OrderedCategory::roots()->get();
 
     $this->assertCount(3, $roots);
-    $this->assertEquals($category, $roots->first());
+    $this->assertEquals($category->getAttributes(), $roots->first()->getAttributes());
   }
 
   public function testRootStatic() {
@@ -47,7 +50,7 @@ class CategoryHierarchyTest extends CategoryTestCase {
 
     $this->assertCount(4, $allLeaves);
 
-    $leaves = $allLeaves->lists('name');
+    $leaves = $allLeaves->pluck('name');
 
     $this->assertContains('Child 1'   , $leaves);
     $this->assertContains('Child 2.1' , $leaves);
@@ -60,7 +63,7 @@ class CategoryHierarchyTest extends CategoryTestCase {
 
     $this->assertCount(1, $allTrunks);
 
-    $trunks = $allTrunks->lists('name');
+    $trunks = $allTrunks->pluck('name');
     $this->assertContains('Child 2', $trunks);
   }
 
@@ -184,16 +187,16 @@ class CategoryHierarchyTest extends CategoryTestCase {
 
     $node = $this->categories('Child 2');
 
-    $descendancy = $node->descendants()->lists('id');
+    $descendancy = $node->descendants()->pluck('id')->toArray();
 
-    $this->assertEmpty($node->descendants()->limitDepth(0)->lists('id'));
+    $this->assertEmpty($node->descendants()->limitDepth(0)->pluck('id')->toArray());
     $this->assertEquals($node, $node->descendantsAndSelf()->limitDepth(0)->first());
 
-    $this->assertEquals(array_slice($descendancy, 0, 3), $node->descendants()->limitDepth(3)->lists('id'));
-    $this->assertEquals(array_slice($descendancy, 0, 5), $node->descendants()->limitDepth(5)->lists('id'));
-    $this->assertEquals(array_slice($descendancy, 0, 7), $node->descendants()->limitDepth(7)->lists('id'));
+    $this->assertEquals(array_slice($descendancy, 0, 3), $node->descendants()->limitDepth(3)->pluck('id')->toArray());
+    $this->assertEquals(array_slice($descendancy, 0, 5), $node->descendants()->limitDepth(5)->pluck('id')->toArray());
+    $this->assertEquals(array_slice($descendancy, 0, 7), $node->descendants()->limitDepth(7)->pluck('id')->toArray());
 
-    $this->assertEquals($descendancy, $node->descendants()->limitDepth(1000)->lists('id'));
+    $this->assertEquals($descendancy, $node->descendants()->limitDepth(1000)->pluck('id')->toArray());
   }
 
   public function testGetAncestorsAndSelf() {
@@ -683,7 +686,7 @@ class CategoryHierarchyTest extends CategoryTestCase {
         'Child G' => array( 'Child G.1' => null )
       )
     );
-    $this->assertArraysAreEqual($expectedSubtreeZ, hmap($this->categories('Root Z', 'OrderedCategory')->getDescendantsAndSelf()->toHierarchy()->toArray()));
+    $this->assertArraysAreEqual($expectedSubtreeZ, hmap($this->categories('Root Z', OrderedCategory::class)->getDescendantsAndSelf()->toHierarchy()->toArray()));
   }
 
   public function testGetNestedList() {

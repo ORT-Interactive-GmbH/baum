@@ -1,11 +1,15 @@
 <?php
 
+namespace Baum\Tests\Models;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Baum\Node;
 
 class Cluster extends Node {
 
   protected $table = 'clusters';
+
+  protected $keyType = 'string';
 
   public $incrementing = false;
 
@@ -35,33 +39,5 @@ class Cluster extends Node {
       mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
     );
   }
-
-}
-
-class ScopedCluster extends Cluster {
-
-  protected $scoped = array('company_id');
-
-}
-
-class MultiScopedCluster extends Cluster {
-
-  protected $scoped = array('company_id', 'language');
-
-}
-
-class OrderedCluster extends Cluster {
-
-  protected $orderColumn = 'name';
-
-}
-
-class SoftCluster extends Cluster {
-
-  use SoftDeletes;
-
-  public $timestamps = true;
-
-  protected $dates = ['deleted_at'];
 
 }

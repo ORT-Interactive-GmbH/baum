@@ -1,5 +1,8 @@
 <?php
 
+use Baum\Tests\Models\Category;
+use Baum\Tests\Models\MultiScopedCategory;
+
 class CategoryTreeRebuildingTest extends CategoryTestCase {
 
   public function testRebuild() {
@@ -59,10 +62,22 @@ class CategoryTreeRebuildingTest extends CategoryTestCase {
     MultiscopedCategory::rebuild();
     $this->assertTrue(MultiscopedCategory::isValidNestedSet());
 
-    $this->assertEquals($root, $this->categories('A', 'MultiScopedCategory'));
+    $this->assertEquals(
+        $root->getAttributes(),
+        $this->categories('A', MultiScopedCategory::class)->getAttributes()
+    );
 
-    $expected = array($child1, $child2);
-    $this->assertEquals($expected, $this->categories('A', 'MultiScopedCategory')->children()->get()->all());
+    $expected = array($child1->getAttributes(), $child2->getAttributes());
+    $this->assertEquals(
+        $expected,
+        $this->categories('A', MultiScopedCategory::class)
+            ->children()
+            ->get()
+            ->map(function($model){
+                return $model->getAttributes();
+            })
+            ->toArray()
+    );
   }
 
   public function testRebuildWithMultipleScopes() {

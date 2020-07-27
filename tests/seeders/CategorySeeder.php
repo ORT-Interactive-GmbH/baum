@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Database\Capsule\Manager as DB;
+use Baum\Tests\Models\Category;
+use Baum\Tests\Models\MultiScopedCategory;
+use Baum\Tests\Models\OrderedCategory;
+use Baum\Tests\Models\OrderedScopedCategory;
+use Baum\Tests\Models\ScopedCategory;
 
 class CategorySeeder {
 
